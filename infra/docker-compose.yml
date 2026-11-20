@@ -1,0 +1,69 @@
+# RepoAudit - local development infrastructure.
+# Usage (from repo root):  cp .env.example .env  &&  pnpm infra:up
+#
+# Postgres + Redis run in containers; the Node services run on the host via `pnpm dev:*`
+# for fast iteration. Containerized app services are sketched at the bottom (Sprint 4).
+
+name: repoaudit
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?set in .env}
+    ports:
+      - "127.0.0.1:5432:5432" # bind to localhost only
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Runs once on first boot of an empty volume. Sprint 1 TODO: replace with a migration tool.
+      - ./db/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # --- Sprint 4: containerized app services (uncomment once Dockerfiles exist) ---
+  # api:
+  #   build: { context: .., dockerfile: services/api/Dockerfile }
+  #   env_file: ../.env
+  #   environment: { JOB_QUEUE_DRIVER: bullmq, REDIS_URL: "redis://redis:6379" }
+  #   ports: ["127.0.0.1:4000:4000"]
+  #   depends_on: { redis: { condition: service_healthy }, postgres: { condition: service_healthy } }
+  #
+  # scanner:
+  #   # SECURITY: the scanner launches sandbox containers. Mounting the Docker socket gives it
+  #   # root-equivalent host access - prefer rootless Docker / a remote sandbox host / gVisor.
+  #   build: { context: .., dockerfile: services/scanner/Dockerfile }
+  #   env_file: ../.env
+  #   environment: { REDIS_URL: "redis://redis:6379" }
+  #   depends_on: { redis: { condition: service_healthy } }
+  #
+  # ai-advisor:
+  #   build: { context: .., dockerfile: services/ai-advisor/Dockerfile }
+  #   env_file: ../.env
+  #   expose: ["4100"] # internal only - never publish
+  #
+  # web:
+  #   build: { context: .., dockerfile: apps/web/Dockerfile }
+  #   environment: { API_URL: "http://api:4000" }
+  #   ports: ["127.0.0.1:3000:3000"]
+
+volumes:
+  pgdata:
+  redisdata:

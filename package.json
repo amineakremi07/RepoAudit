@@ -1,0 +1,23 @@
+{
+  "name": "repoaudit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RepoAudit - automated security auditing for Git repositories and software supply chains (SecuriNets R&D).",
+  "packageManager": "pnpm@11.24.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev:web": "pnpm --filter @repoaudit/web dev",
+    "dev:api": "pnpm --filter @repoaudit/api dev",
+    "dev:scanner": "pnpm --filter @repoaudit/scanner dev",
+    "dev:ai": "pnpm --filter @repoaudit/ai-advisor dev",
+    "typecheck": "pnpm -r typecheck",
+    "build:web": "pnpm --filter @repoaudit/web build",
+    "infra:up": "docker compose -f infra/docker-compose.yml --env-file .env up -d",
+    "infra:down": "docker compose -f infra/docker-compose.yml --env-file .env down"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3"
+  }
+}

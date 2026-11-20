@@ -1,0 +1,10 @@
+packages:
+  - "apps/*"
+  - "services/*"
+  - "packages/*"
+
+# Dependency install scripts are denied by default (supply-chain hardening).
+# Explicitly reviewed exceptions only:
+allowBuilds:
+  esbuild: true # tsx / Next toolchain binary
+  msgpackr-extract: false # optional native speedup for bullmq; pure-JS fallback is fine
