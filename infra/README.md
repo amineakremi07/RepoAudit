@@ -1,6 +1,6 @@
 # infra/
 
-Local development infrastructure. Owner: Security & Backend Engineer.
+Local development infrastructure. Owner: Backend & API Engineer.
 
 - `docker-compose.yml` runs Postgres 17 and Redis 7, bound to `127.0.0.1` only. App services are sketched and commented out until Sprint 4.
 - `db/migrations/` holds the SQL schema. `001_init.sql` runs automatically on the first boot of an empty Postgres volume.

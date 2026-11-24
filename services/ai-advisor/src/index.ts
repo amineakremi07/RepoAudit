@@ -8,7 +8,7 @@ import { REPORT_PROMPT_VERSION } from "./prompts/report.js";
 
 /**
  * Internal HTTP service (not exposed publicly). Called by the pipeline after scans complete.
- * Sprint 3 TODO (Lead): consume a "scan.completed" queue event instead of HTTP; add service auth.
+ * Sprint 3 TODO (AI): consume a "scan.completed" queue event instead of HTTP; add service auth.
  */
 const config = loadConfig();
 const provider = createProvider(config);

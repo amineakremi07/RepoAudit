@@ -3,7 +3,7 @@ import type { Finding, ScanStatus, SeverityCounts } from "@repoaudit/shared-type
 /**
  * Where the scanner reports progress and results.
  *
- * Sprint 1 TODO (Sec/Backend): implement `PostgresResultSink` writing to the `scan_jobs` and
+ * Sprint 1 TODO (Backend): implement `PostgresResultSink` writing to the `scan_jobs` and
  * `findings` tables (shared with the API's PostgresScanRepository), then trigger the AI advisor.
  */
 export interface ResultSink {

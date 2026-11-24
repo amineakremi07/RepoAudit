@@ -3,7 +3,7 @@ import type { CompletionRequest, LLMProvider } from "./types.js";
 /**
  * Anthropic Messages API adapter (plain fetch, no SDK dependency).
  * Model is configured via AI_MODEL; nothing is hardcoded.
- * Sprint 3 TODO (Lead): switch to native structured outputs / tool use for guaranteed JSON.
+ * Sprint 3 TODO (AI): switch to native structured outputs / tool use for guaranteed JSON.
  */
 export class AnthropicProvider implements LLMProvider {
   readonly name = "anthropic";

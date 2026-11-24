@@ -1,5 +1,5 @@
 -- RepoAudit initial schema (Sprint 1 draft).
--- Mirrors packages/shared-types. Owner: Security & Backend Engineer; review with Lead.
+-- Mirrors packages/shared-types. Owner: Backend & API Engineer; schema changes mirrored in shared-types need Lead review.
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 

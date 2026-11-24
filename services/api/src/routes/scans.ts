@@ -5,7 +5,7 @@ import type { ScanService } from "../services/scan-service.js";
 
 /**
  * Scan job routes.
- * Sprint 1 TODO (Lead + Sec/Backend): authentication (dashboard session / API key) before beta.
+ * Sprint 1 TODO (Backend + Lead): authentication (dashboard session / API key) before beta.
  */
 export const scanRoutes: FastifyPluginAsync<{ scans: ScanService }> = async (app, { scans }) => {
   app.post("/scans", async (req, reply) => {

@@ -22,7 +22,7 @@ interface GitHubPushPayload {
 
 /**
  * Map a GitHub event to a scan request. Returns undefined for events we ignore.
- * Sprint 1 TODO (Lead): handle `pull_request` (opened/synchronize) events.
+ * Sprint 1 TODO (Backend): handle `pull_request` (opened/synchronize) events.
  */
 export function githubEventToScanRequest(event: string | undefined, payload: unknown): CreateScanRequest | undefined {
   if (event !== "push") return undefined;

@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { Finding } from "@repoaudit/shared-types";
 import type { Analyzer, AnalyzerContext } from "../core/analyzer.js";
 import { fingerprint } from "../core/fingerprint.js";
-import { fromSemgrep } from "../core/severity.js";
+import { fromSemgrep } from "./severity.js";
 
 /** Subset of `semgrep --json` output we consume. */
 interface SemgrepJson {

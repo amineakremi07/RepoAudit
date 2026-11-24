@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { Finding } from "@repoaudit/shared-types";
 import type { Analyzer, AnalyzerContext } from "../core/analyzer.js";
 import { fingerprint } from "../core/fingerprint.js";
-import { fromCvss } from "../core/severity.js";
+import { fromCvss } from "./severity.js";
 import type { AdvisorySource } from "./advisory-source.js";
 import { parsePackageLock, parseRequirementsTxt, type DeclaredDependency } from "./manifests.js";
 import type { TyposquatDetector } from "./typosquat.js";

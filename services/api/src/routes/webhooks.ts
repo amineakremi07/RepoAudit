@@ -60,7 +60,7 @@ async function enqueueFromWebhook(
   // Payload fields are attacker-influenced even after signature checks: re-validate.
   const parsed = CreateScanRequestSchema.safeParse(candidate);
   if (!parsed.success) return reply.code(422).send({ error: "unsupported_payload" });
-  // Sprint 1 TODO (Lead): only accept repositories registered in RepoAudit (allow-list).
+  // Sprint 1 TODO (Backend): only accept repositories registered in RepoAudit (allow-list).
   const job = await scans.createScan(parsed.data, "webhook_push");
   return reply.code(202).send({ scanId: job.id });
 }

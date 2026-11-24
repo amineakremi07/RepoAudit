@@ -29,7 +29,7 @@ const OSV_ECOSYSTEM: Partial<Record<Ecosystem, string>> = {
  * Runs in the worker process, NOT the sandbox: only package names + versions leave the host,
  * never source code.
  *
- * Sprint 2 TODO (Sec/Backend): fetch /vulns/{id} for summary, CVSS, aliases and fixed versions;
+ * Sprint 2 TODO (Supply Chain): fetch /vulns/{id} for summary, CVSS, aliases and fixed versions;
  * add caching + pagination (`next_page_token`).
  */
 export class OsvAdvisorySource implements AdvisorySource {

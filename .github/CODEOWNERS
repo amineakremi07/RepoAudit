@@ -1,26 +1,58 @@
-# RepoAudit code ownership.
-# Replace the placeholder handles below with real GitHub usernames / team slugs.
-#   @REPLACE_ME_lead      -> Mohamed Amine Akremi (PM / Lead Full-Stack & AI)
-#   @REPLACE_ME_secbackend -> Security & Backend Engineer (SAST & Supply Chain)
+# RepoAudit code ownership (4-person team).
+#
+# HOW GITHUB READS THIS FILE
+#   - The LAST matching pattern wins, so broad rules come first and specific ones after.
+#   - When a line lists several owners, ONE approval from any of them satisfies the rule.
+#     "Co-owned" lines therefore request review from everyone listed. Getting approval from
+#     both is a team working agreement (docs/TEAM.md), not something CODEOWNERS enforces.
+#
+# HANDLES: replace the placeholders before pushing to GitHub or enabling branch protection.
+#   @amineakremi007         -> Member 1, Project Manager / Lead Full-Stack (Mohamed Amine Akremi)
+#   @teammate-backend       -> Member 2, Backend & API Engineer             (fill with their GitHub username)
+#   @teammate-supply-chain  -> Member 3, Supply Chain & Package Security    (fill with their GitHub username)
+#   @teammate-ai            -> Member 4, AI & Automation Specialist         (fill with their GitHub username)
+# Every handle must have write access to the repo, or GitHub ignores the rule.
 
-# Default: lead reviews anything not matched below
-*                                   @REPLACE_ME_lead
+# --- Default: the Lead reviews anything not matched below ---
+*                                              @amineakremi007
 
-# --- PM / Lead Full-Stack & AI ---
-/apps/web/                          @REPLACE_ME_lead
-/services/ai-advisor/               @REPLACE_ME_lead
-/services/api/src/webhooks/         @REPLACE_ME_lead
-/docs/                              @REPLACE_ME_lead
-/README.md                          @REPLACE_ME_lead
+# --- Member 1: PM / Lead Full-Stack ---
+/apps/web/                                     @amineakremi007
+/docs/                                         @amineakremi007
+/README.md                                     @amineakremi007
+/package.json                                  @amineakremi007
+/pnpm-workspace.yaml                           @amineakremi007
+/pnpm-lock.yaml                                @amineakremi007
+/tsconfig.base.json                            @amineakremi007
+/.github/                                      @amineakremi007
 
-# --- Security & Backend Engineer ---
-/services/scanner/                  @REPLACE_ME_secbackend
-/services/api/src/queue/            @REPLACE_ME_secbackend
-/services/api/src/repositories/     @REPLACE_ME_secbackend
-/infra/                             @REPLACE_ME_secbackend
-/services/scanner/src/core/severity.ts @REPLACE_ME_secbackend
+# --- Member 2: Backend & API Engineer ---
+/services/api/                                 @teammate-backend
+/infra/                                        @teammate-backend
+/.env.example                                  @teammate-backend @amineakremi007
+# Scanner worker orchestration: entrypoint, pipeline, config, result sink, Dockerfile.
+/services/scanner/                             @teammate-backend
+# Isolation boundary: hardened clone + Docker sandbox runner.
+/services/scanner/src/isolation/               @teammate-backend
+# SAST execution: Semgrep adapter and its severity mapping.
+/services/scanner/src/sast/                    @teammate-backend
+/services/scanner/src/sast/severity.ts         @teammate-backend @teammate-supply-chain
 
-# --- Shared contracts: both must review ---
-/packages/shared-types/             @REPLACE_ME_lead @REPLACE_ME_secbackend
-/services/api/src/routes/           @REPLACE_ME_lead @REPLACE_ME_secbackend
-/docs/SECURITY.md                   @REPLACE_ME_lead @REPLACE_ME_secbackend
+# --- Member 3: Supply Chain & Package Security Specialist ---
+# Lockfile parsers, OSV.dev client, typosquat detection, severity scoring rules.
+/services/scanner/src/supply-chain/            @teammate-supply-chain
+
+# --- Shared scanner contracts (Analyzer interface, fingerprint, severity aggregation) ---
+/services/scanner/src/core/                    @teammate-backend @teammate-supply-chain
+
+# --- Member 4: AI & Automation Specialist ---
+/services/ai-advisor/                          @teammate-ai
+
+# --- Cross-team contracts (must come after the broad rules above) ---
+/packages/shared-types/                        @amineakremi007 @teammate-backend @teammate-supply-chain @teammate-ai
+/packages/shared-types/src/remediation.ts      @teammate-ai @amineakremi007
+/services/api/src/routes/                      @teammate-backend @amineakremi007
+/infra/db/migrations/                          @teammate-backend @amineakremi007
+/docs/SECURITY.md                              @amineakremi007 @teammate-backend @teammate-supply-chain @teammate-ai
+/docs/ARCHITECTURE.md                          @amineakremi007 @teammate-backend
+/.github/CODEOWNERS                            @amineakremi007

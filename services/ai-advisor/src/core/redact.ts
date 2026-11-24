@@ -1,7 +1,7 @@
 /**
  * Best-effort secret redaction applied to ALL text before it is sent to an LLM provider.
  * Findings may quote source lines that contain credentials (that's often why they're findings).
- * Sprint 3 TODO (Lead): extend patterns; add entropy-based detection.
+ * Sprint 3 TODO (AI): extend patterns; add entropy-based detection.
  */
 const PATTERNS: Array<[RegExp, string]> = [
   [/-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g, "[REDACTED_PRIVATE_KEY]"],

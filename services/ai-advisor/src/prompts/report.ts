@@ -2,7 +2,7 @@ import type { Finding } from "@repoaudit/shared-types";
 import { redactSecrets } from "../core/redact.js";
 
 /**
- * Prompt templates (owner: Lead Full-Stack & AI). Version them: bump on every change so
+ * Prompt templates (owner: AI & Automation Specialist). Version them: bump on every change so
  * reports can be traced to the prompt that produced them.
  */
 export const REPORT_PROMPT_VERSION = "report-v0.1";

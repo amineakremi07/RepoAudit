@@ -59,7 +59,7 @@ export class EphemeralWorkspace {
 
     try {
       await git(["init", "--quiet"]);
-      // Sprint 1 TODO (Sec/Backend): private repos - inject the READ-ONLY token via env
+      // Sprint 1 TODO (Backend): private repos - inject the READ-ONLY token via env
       // (GIT_CONFIG_COUNT/KEY/VALUE), SCOPED to the provider host only:
       //   http.https://github.com/.extraHeader=Authorization: Basic ...
       // Never an unscoped http.extraHeader, never in argv or the URL (leaks to `ps`/logs).

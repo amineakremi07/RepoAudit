@@ -3,7 +3,7 @@ import type { ScanJob, ScanStatus } from "@repoaudit/shared-types";
 /**
  * Persistence port for scan jobs. The service layer depends only on this interface.
  *
- * Sprint 1 TODO (Security & Backend): add `PostgresScanRepository` implementing this
+ * Sprint 1 TODO (Backend): add `PostgresScanRepository` implementing this
  * interface against infra/db/migrations/001_init.sql, and select it via DATABASE_URL.
  */
 export interface ScanRepository {

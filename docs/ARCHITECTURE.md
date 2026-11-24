@@ -17,13 +17,16 @@
 
 | Component | Tech | Responsibility | Owner |
 |---|---|---|---|
-| `apps/web` | Next.js 16 (App Router, Server Components), React 19, Tailwind 4 | Dashboard: overview, repositories, findings, AI remediation review | Lead |
-| `services/api` | Fastify 5, zod, BullMQ producer | Webhook ingestion + verification, scan job CRUD, enqueueing | Lead (webhooks) / Sec-Backend (queue, persistence) |
-| `services/scanner` | Node worker, BullMQ consumer, Docker sandbox | Ephemeral workspace, analyzers, normalization, severity scoring | Sec-Backend |
-| `services/ai-advisor` | Fastify, pluggable LLM providers | Risk report synthesis, patch proposals, output validation | Lead |
-| `packages/shared-types` | zod | Contracts: `Repository`, `ScanJob`, `Finding`, `Severity`, `RiskReport`, `PatchSuggestion` | Both |
-| Postgres | 17 | Repositories, scans, findings, reports, patch decisions | Sec-Backend |
-| Redis | 7 | Job queue (BullMQ) | Sec-Backend |
+| `apps/web` | Next.js 16 (App Router, Server Components), React 19, Tailwind 4 | Dashboard: overview, repository registration, findings, AI remediation review | M1 Lead |
+| `services/api` | Fastify 5, zod, BullMQ producer | Webhook ingestion + verification, scan job CRUD, enqueueing, auth | M2 Backend |
+| `services/scanner` (`index.ts`, `pipeline.ts`, `isolation/`, `results/`) | Node worker, BullMQ consumer, Docker sandbox | Job consumption, ephemeral workspace, sandbox runner, result reporting | M2 Backend |
+| `services/scanner/src/sast/` | Semgrep in the Docker sandbox | SAST analyzer and Semgrep severity mapping | M2 Backend |
+| `services/scanner/src/supply-chain/` | Static parsers, OSV.dev client | Lockfile parsing, advisory lookup, typosquat detection, severity scoring rules | M3 Supply Chain |
+| `services/scanner/src/core/` | TypeScript interfaces | `Analyzer` contract, fingerprinting, severity aggregation | M2 + M3 |
+| `services/ai-advisor` | Fastify, pluggable LLM providers (mock, Anthropic, OpenAI-compatible) | Risk report synthesis, patch proposals, output validation, finding-ID grounding | M4 AI |
+| `packages/shared-types` | zod | Contracts: `Repository`, `ScanJob`, `Finding`, `Severity`, `RiskReport`, `PatchSuggestion` | M1 + domain owners (AI schemas in `remediation.ts`: M4) |
+| Postgres | 17 | Repositories, scans, findings, reports, patch decisions | M2 Backend |
+| Redis | 7 | Job queue (BullMQ) | M2 Backend |
 
 ## 3. End-to-end data flow
 
@@ -43,12 +46,12 @@ flowchart LR
         Q[(Redis<br/>BullMQ)]
         DB[(Postgres)]
         subgraph Worker["services/scanner"]
-            WS[Ephemeral workspace<br/>hardened shallow clone]
-            subgraph Sandbox["Sandbox: no network, read-only, non-root"]
-                SAST[SAST analyzers<br/>Semgrep, ...]
+            WS["isolation/workspace.ts<br/>hardened shallow clone"]
+            subgraph Sandbox["isolation/sandbox.ts: no network, read-only, non-root"]
+                SAST["sast/<br/>Semgrep + severity mapping"]
             end
-            SC[Supply-chain audit<br/>static lockfile parsing]
-            NORM[Normalize + severity<br/>Finding]
+            SC["supply-chain/<br/>lockfile parsers · OSV · typosquat · severity scoring"]
+            NORM["pipeline.ts<br/>Finding[] + core/severity aggregation"]
         end
         AI[services/ai-advisor<br/>redact · prompt · validate]
     end
@@ -107,7 +110,7 @@ sequenceDiagram
     S->>S: hardened clone into temp dir
     S->>X: docker run --network none --read-only ...
     X-->>S: tool JSON
-    S->>S: normalize → Finding[], score severity
+    S->>S: normalize → Finding[] (sast/ + supply-chain/ scoring)
     S->>V: findings (Sprint 3)
     V->>V: redact → prompt → zod validate → ground IDs
     V-->>S: RiskReport
@@ -118,8 +121,9 @@ sequenceDiagram
 
 | Decision | Rationale |
 |---|---|
-| **TypeScript everywhere, zod as the contract** | One language for a 2-person team. Runtime validation at every trust boundary (HTTP, queue, LLM output) from the same schemas as the types. |
-| **shared-types consumed from source** (`workspace:*`, Next `transpilePackages`) | No build step or publish loop during the 3-month project. |
+| **TypeScript everywhere, zod as the contract** | One language for a 4-person team. Runtime validation at every trust boundary (HTTP, queue, LLM output) from the same schemas as the types. |
+| **shared-types consumed from source** (`workspace:*`, Next `transpilePackages`) | No build step or publish loop during the 3-month project. Imports inside the package have no file extensions so Turbopack resolves them. |
+| **Scanner split by domain** (`sast/`, `supply-chain/`, shared `core/`) | Backend (M2) and Supply Chain (M3) work in parallel with few merge conflicts. Each domain owns its own severity mapping. `core/` holds only the shared contract. |
 | **Ports & adapters** (`ScanRepository`, `JobQueue`, `SandboxRunner`, `Analyzer`, `AdvisorySource`, `LLMProvider`, `ResultSink`) | Each external dependency is swappable and testable. In-memory or mock adapters keep local dev offline. |
 | **Queue between API and scanner** | Scans are slow and risky. The API stays responsive, and workers scale and crash independently. `jobId = scanId` makes webhook redeliveries idempotent. |
 | **Analyzers in Docker with `--network none`** | Analysis needs no network, so data exfiltration and SSRF are cut off by construction. Rule packs are vendored. |
@@ -129,8 +133,8 @@ sequenceDiagram
 
 ## 5. Extending
 
-- **New analyzer:** implement `Analyzer` (`services/scanner/src/core/analyzer.ts`), map its output to `Finding`, and register it in `src/index.ts`.
-- **New advisory source:** implement `AdvisorySource` (for example, the GitHub Advisory DB).
+- **New analyzer:** implement `Analyzer` (`services/scanner/src/core/analyzer.ts`) in the matching domain folder (`src/sast/` or `src/supply-chain/`), map its output to `Finding` with that domain's `severity.ts`, and register it in `src/index.ts`.
+- **New advisory source:** implement `AdvisorySource` in `src/supply-chain/advisory-source.ts` (for example, the GitHub Advisory DB).
 - **New LLM provider:** implement `LLMProvider` and add it to `providers/index.ts` and the `AI_PROVIDER` enum.
 - **New sandbox backend:** implement `SandboxRunner` (gVisor `runsc`, Firecracker, Kubernetes Jobs).
 

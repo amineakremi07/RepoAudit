@@ -1,6 +1,8 @@
 # Sprint Plan: 3 months, 4 sprints of 3 weeks
 
-Owner: PM / Lead (Mohamed Amine Akremi). Update the status column at each sprint review.
+Owner: Project Manager / Lead (Mohamed Amine Akremi). Update the status column at each sprint review.
+
+Roles: **Lead** = M1 Project Manager / Lead Full-Stack · **Backend** = M2 Backend & API Engineer · **Supply Chain** = M3 Supply Chain & Package Security Specialist · **AI** = M4 AI & Automation Specialist. See [`TEAM.md`](TEAM.md).
 
 | Sprint | Weeks | Theme | Exit criteria (demo) |
 |---|---|---|---|
@@ -14,35 +16,56 @@ Owner: PM / Lead (Mohamed Amine Akremi). Update the status column at each sprint
 | Task | Owner | Done when |
 |---|---|---|
 | Monorepo skeleton, contracts, architecture docs | Lead | ✅ skeleton in place |
-| Choose a migration tool and adopt `001_init.sql` | Sec/Backend | `pnpm db:migrate` works against compose Postgres |
-| `PostgresScanRepository` (API) + `PostgresResultSink` (scanner) | Sec/Backend | Status transitions visible via `GET /scans/:id` with `JOB_QUEUE_DRIVER=bullmq` |
-| `repositories` resource: register, list, allow-list for webhooks | Lead | Unregistered repo webhooks return 202 `ignored` |
-| GitHub `pull_request` and GitLab `merge_request` handling | Lead | Fixture payload tests pass |
-| Decide GitHub App vs fine-grained PAT (ADR in `docs/adr/`) | Lead | ADR merged |
-| Private repo clone with read-only token via env-injected header | Sec/Backend | Token absent from argv, URL and logs (verified) |
-| Repo size and time limits enforced | Sec/Backend | Oversized fixture fails cleanly |
-| Test harness (`node:test` or Vitest) + CI typecheck | Both | CI green on PRs |
+| 4-person ownership split: CODEOWNERS, scanner `sast/` vs `supply-chain/` | Lead | ✅ done (pending commit) |
 | Sprint board and burndown | Lead | Board shared with the team |
+| Repository registration UI on the dashboard | Lead | Repos can be registered and listed from the DB |
+| Decide GitHub App vs fine-grained PAT (ADR in `docs/adr/`) | Lead | ADR merged |
+| Choose a migration tool and adopt `001_init.sql` | Backend | `pnpm db:migrate` works against compose Postgres |
+| `PostgresScanRepository` (API) + `PostgresResultSink` (scanner) | Backend | Status transitions visible via `GET /scans/:id` with `JOB_QUEUE_DRIVER=bullmq` |
+| `repositories` API resource + webhook allow-list | Backend | Unregistered repo webhooks return 202 `ignored` |
+| GitHub `pull_request` and GitLab `merge_request` handling | Backend | Fixture payload tests pass |
+| Private repo clone with read-only token via env-injected header | Backend | Token absent from argv, URL and logs (verified) |
+| Repo size and time limits enforced | Backend | Oversized fixture fails cleanly |
+| Lockfile parser test fixtures (npm v2/v3, `requirements.txt`) | Supply Chain | Parser tests pass, including path-traversal rejection |
+| OSV client contract test (mocked `fetch`) | Supply Chain | Batch chunking and error paths covered |
+| Provider adapter tests with mock LLM; prompt versioning scheme | AI | Malformed output and unknown finding IDs rejected in tests |
+| Test harness (`node:test` or Vitest) + CI typecheck | Lead (CI) + all | CI green on PRs |
 
 ## Sprint 2: Scanners
 
-- Vendor Semgrep rule packs (OWASP Top 10, secrets) and pin the image by digest. Map severities. Assemble a fixture repo of deliberately vulnerable code.
-- OSV enrichment: `/vulns/{id}` details, CVSS to severity, fixed versions, aliases (CVE/GHSA), caching.
-- Lockfiles: `pnpm-lock.yaml`, `yarn.lock`, `poetry.lock`, `Pipfile.lock`. Recursive discovery with caps.
-- Outdated-dependency check (registry metadata, read-only).
-- Typosquat: popular-package list source and refresh job. Suspicious install-script detection (static `package.json` inspection).
-- Lead: `GET /scans/:id/findings` endpoint and start of the findings UI.
+| Task | Owner |
+|---|---|
+| Vendor Semgrep rule packs (OWASP Top 10, secrets), pin the image by digest, finalize the Semgrep severity mapping | Backend (Supply Chain reviews the mapping) |
+| Seeded vulnerable fixture repo for end-to-end scans | Backend + Supply Chain |
+| Scanner `Dockerfile` for the worker | Backend |
+| `GET /scans/:id/findings` endpoint | Backend |
+| OSV enrichment: `/vulns/{id}` details, CVSS to severity, fixed versions, aliases (CVE/GHSA), caching, pagination | Supply Chain |
+| Lockfiles: `pnpm-lock.yaml`, `yarn.lock`, `poetry.lock`, `Pipfile.lock`. Recursive discovery with caps. Unpinned-dependency findings. | Supply Chain |
+| Outdated-dependency check (registry metadata, read-only) | Supply Chain |
+| Typosquat: popular-package list source and refresh job. Suspicious install-script detection (static `package.json` inspection). | Supply Chain |
+| Contextual severity adjustments (for example, dev-only dependencies) | Supply Chain |
+| Findings UI (start) on the dashboard | Lead |
+| Prompt evals on fixture findings (SAST + supply chain) | AI |
 
 ## Sprint 3: Dashboard and AI
 
-- Advisor invoked after scans (queue event). Persist `risk_reports` and `patch_suggestions`.
-- Real provider configured. Structured outputs. Prompt versioning and evals on fixture findings.
-- Patch generation needs code context: send only the relevant snippet (redacted) and validate that the diff applies.
-- Dashboard: findings filters, report view, diff viewer, accept/reject (records `decided_by`).
+| Task | Owner |
+|---|---|
+| Advisor invoked after scans (queue event). Persist `risk_reports` and `patch_suggestions`. | Backend (trigger, persistence) + AI (consumer) |
+| Real provider configured. Structured outputs / tool use. Prompt versioning and evals. | AI |
+| Patch generation with code context: only the relevant snippet (redacted), and validate that the diff applies | AI |
+| Extended secret redaction (entropy-based) | AI |
+| Findings dedup across scans (fingerprints) | Backend + Supply Chain |
+| Dashboard: findings filters, report view, diff viewer, accept/reject (records `decided_by`) | Lead |
 
 ## Sprint 4: Hardening and beta
 
-- Auth (dashboard sessions, API keys for CI), rate limits, CSP and security headers.
-- gVisor or rootless sandbox. Dockerfiles for all services. Compose `full` profile.
-- Tests: webhook signature, ref-injection, path-traversal, and prompt-injection fixtures. Load test with concurrent scans.
-- Docs: user guide, runbook, threat model review. Internal club beta and a feedback loop.
+| Task | Owner |
+|---|---|
+| Auth (dashboard sessions, API keys for CI), rate limits | Backend (API) + Lead (dashboard) |
+| CSP and security headers on the dashboard | Lead |
+| gVisor or rootless sandbox. Dockerfiles for all services. Compose `full` profile. | Backend |
+| Tests: webhook signature, ref-injection, path-traversal fixtures. Load test with concurrent scans. | Backend |
+| Tests: malicious lockfiles (huge, deeply nested, traversal), typosquat false-positive review | Supply Chain |
+| Tests: prompt-injection fixtures, hallucinated-ID filtering, patch safety | AI |
+| Docs: user guide, runbook, threat model review. Internal club beta and a feedback loop. | Lead (all contribute SECURITY.md entries) |

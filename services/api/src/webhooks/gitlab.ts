@@ -18,7 +18,7 @@ interface GitLabPushPayload {
 
 /**
  * Map a GitLab event to a scan request. Returns undefined for events we ignore.
- * Sprint 1 TODO (Lead): handle `merge_request` events.
+ * Sprint 1 TODO (Backend): handle `merge_request` events.
  */
 export function gitlabEventToScanRequest(payload: unknown): CreateScanRequest | undefined {
   const p = payload as GitLabPushPayload;

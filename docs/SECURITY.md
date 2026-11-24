@@ -4,6 +4,8 @@ RepoAudit ingests **untrusted repositories** by design. Assume every repository,
 
 ## Threats and controls
 
+Each threat entry is maintained by the owner of the code in its **Where** column (see [`TEAM.md`](TEAM.md)). Changes to this file are reviewed by all four roles.
+
 | # | Threat | Control | Where |
 |---|---|---|---|
 | T1 | Forged webhooks trigger scans or flood the queue | HMAC-SHA256 over the raw body (GitHub) and token check (GitLab), both constant-time. Fail closed when the secret is unset. 1 MB body limit. Payload re-validated with zod. *Sprint 1:* allow-list of registered repos. | `services/api/src/webhooks/`, `routes/webhooks.ts` |
